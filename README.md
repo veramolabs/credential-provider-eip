@@ -88,14 +88,14 @@ Issues a VC with the given payload using one of the CP's DIDs.
 * `vc` - A Verifiable Credential that was issued by the CP. 
 * `error` - If `payload` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification, or the `verificationMethod` was not found or is not mangaged by the CP.
 
-### Disclose
+### Present
 
 Selective discloses information from the CP. Optionally, holder binding can be requested. For the query, 
 we will use the [DIF Presentation Exchange](https://identity.foundation/presentation-exchange/) data model. 
 
 ##### Method: 
 
-`creds_disclose`
+`creds_present`
 
 ##### Params:
 
