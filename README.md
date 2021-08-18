@@ -18,12 +18,17 @@ Add new methods to the JSON-RPC for storing, creating, selectively disclosing an
 ## Abstract
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-This EIP describes <N> methods to add to the JSON-RPC that enables wallets to support *Verifiabe Credentials* (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifyable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selective disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. Since the the VC data model is very flexible, this EIP enforces specific rules on VCs and supported proof types to facilitate interoperability.
+This EIP describes <N> methods to add to the JSON-RPC that enables wallets to support *Verifiabe Credentials* (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifyable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selective disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. Since the the VC data model is very flexible, this EIP enforces specific rules on VCs and supported proof types to facilitate interoperability. This is important for use cases such as sign-in, sign-up and decentralized reputation-based authorization.
 
 This EIP is complementary to EIP-2844.
 
 ## Motivation
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
+
+The majority of Web3 projects are using an approach where they cryptographically bind a signature produced by the wallet to the identity assertion through either personal_sign or EIP-712. The identity assertion becomes self-certifiable with this approach. The identifier for the user is either the Ethereum address or the ENS name depending on availability.
+
+This has on the one hand limited use and implies connecting the web3 application with a correlateable identifier, on the
+other hand, assertions cannot be attested by a third-party and are not verifiable. etc
 
 <!-- example copied from eip2844
 There has been one main previous effort ([#130](https://github.com/ethereum/EIPs/issues/130), [#1098](https://github.com/ethereum/EIPs/pull/1098)) to add decryption to Ethereum wallets in a standard way. This previous approach used a non standard way to encode and represent data encrypted using `x25519-xsalsa20-poly1305`. While this approach does provide a functional way to add encryption support to wallets, it does not take into account similar work that has gone into standardizing the way encrypted data is represented, namely using [JOSE](https://datatracker.ietf.org/wg/jose/documents/) and [COSE](https://datatracker.ietf.org/wg/cose/documents/). Both of these are standards from IETF for representing signed and encrypted objects. Another shortcoming of the previous approach is that it's impossible to retrieve the `x25519` public key from another user if only an Ethereum address is known. Public key discoverability is at the core of the work that is happening with the [W3C DID standard](https://w3c.github.io/did-core), where given a DID a document which contains public keys can always be discovered. Implementations of this standard already exist and are adopted within the Ethereum community, e.g. [`did:ethr`](https://github.com/decentralized-identity/ethr-did-resolver/) and [`did:3`](https://github.com/3box/3id-resolver). Interoperability between JOSE/COSE and DIDs [already exists](https://github.com/decentralized-identity/did-jwt), and work is being done to [strengthen it](https://github.com/decentralized-identity/did-jose-extensions). Adding support for JOSE/COSE and DIDs will enable Ethereum wallets to support a wide range of new use cases such as more traditional authentication using JWTs, as well as new emerging technologies such as [Secure Data Stores](https://identity.foundation/secure-data-store/) and [encrypted data in IPFS](https://github.com/ipld/specs/pull/269).
@@ -34,13 +39,24 @@ There has been one main previous effort ([#130](https://github.com/ethereum/EIPs
 Five new JSON-RPC methods are specified under the new `did_*` prefix.
 -->
 
+### Supported LD-Proofs
+
+This is a registry of supported LD-Proofs by this specification. New LD-proof types MAY be added through PRs. The 
+MUST contain a link to the LD-Proof specification as well as a decription why support is  needed. As a rule of thumb, 
+new LD-Proof types MUST be registered in the W3C CCG [LD-Proof Suite Registry](https://w3c-ccg.github.io/ld-cryptosuite-registry/).
+
+Credential Providers MUST support the following LD-Proof types:
+- [`EthereumEip712Signature2021`](TBD)
+- [`JsonWebSignature2020`](https://github.com/w3c-ccg/lds-jws2020), only Ed25519 and secp256k1
+
+
+### Supported Verifiable Credentials Profile
+
+VCs that can be used with this specification MUST be valid JSON-LD and MUST contain a valid LD-Proof in the `proof` property. JWT-based VCs and proofs are intentionally not supported.
+
 ### Store
 
-<!-- example copied from eip2844
-Authenticate the current rpc connection to the DID methods.
-
-Prompt the user to give permission to the current connection to access the user DID and the given `paths`.
--->
+Stores the given VC in the CP.
 
 ##### Method: 
 
@@ -48,48 +64,70 @@ Prompt the user to give permission to the current connection to access the user 
 
 ##### Params:
 
-<!-- example copied from eip2844
-* `paths` - an array of strings
--->
+* `vc` - A Verifiable Credential.
 
 ##### Returns:
 
-<!-- example copied from eip2844
-* `did` - the DID which authentication was given for
-* `paths` - the paths which was given permission for
--->
+* `error` - If `vc` was malformed or does not comply with the Verifialbe Credentials Profile defined in this specification.
+
+### Issue
+
+Issues a VC with the given payload using one of the CP's DIDs.
+
+##### Method: 
+
+`creds_issue`
+
+##### Params:
+
+* `payload` - The payload of the Verifiable Credential to be issued.
+* `verificationMethod` - A DID URI that indicates which method (e.g., key) to use to create the proof over the `payload`, e.g., `did:example:0xaaaa#my-secp256k1-key`
+
+##### Returns:
+
+* `vc` - A Verifiable Credential that was issued by the CP. 
+* `error` - If `payload` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification, or the `verificationMethod` was not found or is not mangaged by the CP.
+
+### Disclose
+
+Selective discloses information from the CP. Optionally, holder binding can be requested. For the query, 
+we will use the [DIF Presentation Exchange](https://identity.foundation/presentation-exchange/) data model. 
+
+##### Method: 
+
+`creds_disclose`
+
+##### Params:
+
+* `presentation_defintion` - Defines the selective disclosure query with optional holder binding.
+* `domain` - OPTIONAL: if holder binding was requested, this parameter is mandatory.
+* `challenge` - OPTIONAL: if holder binding was requested, this parameter is mandatory. 
+
+##### Returns:
+
+* `presentation_submission` - Defines where the requested information can be found in the VP.
+* `vp` - A Verifiable Presentation (VP) that contains the requested disclosed VCs from the CP.
+* `error` - If `presentation_definition` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification.
+
 
 ## Rationale
 <!--The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages. The rationale may also provide evidence of consensus within the community, and should discuss important objections or concerns raised during discussion.-->
 
-<!-- example copied from eip2844
-This EIP chooses to rely on DIDs and JOSE/COSE since there is already support for these standards in many places, by current systems and new systems. While most systems today rely on JOSE, support for COSE is also specified because it has growing support due to it's compact encoding of data. By using DIDs and JOSE/COSE wallet implementers can also choose which signing and encryption algorithms that they want to support, since these formats are faily agnostic to specific crypto implementations.
-
-### Permission system
-
-A simple permission system is proposed where clients can request permissions though path prefixes, e.g. `/some/permission`. When decryption of a JWE/CWE is requested the wallet should check if the decrypted payload contains a `paths` property. If this property doesn't exist the user may be prompted to confirm that the given rpc connection (app) is allowed to read the decrypted data. If the `paths` property is present in the decrypted data it should contain an array of string paths. If one of the these path prefixes matches with one of the path prefixes the user has already granted permission for then decryption should happen automatically without any user confirmation.
-
-This simple permission system was inspired by some previous comments ([1](https://github.com/ethereum/EIPs/issues/130#issuecomment-329770999), [2](https://medium.com/@wighawag/3-proposals-for-making-web3-a-better-experience-974f97765700)) but avoids data lock in around origins.
--->
+TBD
 
 ## Implementation
 <!--The implementations must be completed before any EIP is given status "Final", but it need not be completed before the EIP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of API details.-->
 
-<!-- example copied from eip2844
-[IdentityWallet](https://github.com/3box/identity-wallet-js/): A partial implementation of the `did_*` methods using the 3ID DID.
-
-[js-did](https://github.com/ceramicnetwork/js-did): A small library which consumes the `did_*` methods.
-
-[MinimalCipher](https://github.com/digitalbazaar/minimal-cipher): An implementation of DID related encryption for JWE.
--->
+- TBD
+- TBD
+- TBD
 
 ## Security Considerations
 <!--All EIPs must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal. E.g. include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. EIP submissions missing the "Security Considerations" section will be rejected. An EIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.-->
 
-<!-- example copied from eip2844
-Both JOSE/COSE and DIDs are standards that have gone though a lot of scrutiny. Their security will not be considered in this document. In the specification section, recommendations are given for which algorithms to use. For signatures `secp256k1` is already used by ethereum and for decryption `xchacha20poly1305` is widely available, very performant, and already used in TLS.
+TBD: something on secure challenge (aka nonce)
 
-The main security consideration of this EIP is the suggested permission system. Here various threat models could be considered. However, this EIP does not go into details about how it should work other than suggesting an approach. In the end it is up to wallet implementations to choose how to ask their users for consent.
--->
+TBD
+
 ## Copyright
 Copyright and related rights waived via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
