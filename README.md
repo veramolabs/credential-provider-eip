@@ -18,11 +18,7 @@ Add new methods to the JSON-RPC for storing, creating, selectively disclosing an
 ## Abstract
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-<!-- example copied from eip2844
-This EIP describes five new methods to add to the JSON-RPC that enables wallets to support *Decentralized Identifiers* (DIDs) as well as *JSON Object Signing and Encryption* (JOSE) and *CBOR Object Signing and Encryption* (COSE). These standards enables wallets to support data decryption as well as authenticated data, both in standard formats using JOSE and COSE. With these new methods apps can request the DID from a users wallet, from which a DID document can be resolved. The DID document contains public keys that can be used for encryption and signature verification. This enables Alice to discover Bobs public keys by only knowing Bobs DID. This EIP does not enforce the user of any particular DID method or JOSE/COSE algorithms, wallets are free to implement these however they wish.
--->
-
-This EIP describes <N> methods to add to the JSON-RPC that enables wallets to support *Verifiabe Credentials* (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifyable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selective disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. 
+This EIP describes <N> methods to add to the JSON-RPC that enables wallets to support *Verifiabe Credentials* (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifyable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selective disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. Since the the VC data model is very flexible, this EIP enforces specific rules on VCs and supported proof types to facilitate interoperability.
 
 This EIP is complementary to EIP-2844.
 
