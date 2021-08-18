@@ -18,7 +18,7 @@ Add new methods to the JSON-RPC for storing, creating, selectively disclosing an
 ## Abstract
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-This EIP describes <N> methods to add to the JSON-RPC that enables wallets to support *Verifiabe Credentials* (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifyable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selective disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. Since the the VC data model is very flexible, this EIP enforces specific rules on VCs and supported proof types to facilitate interoperability.
+This EIP describes <N> methods to add to the JSON-RPC that enables wallets to support *Verifiabe Credentials* (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifyable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selective disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. Since the the VC data model is very flexible, this EIP enforces specific rules on VCs and supported proof types to facilitate interoperability. This is important for use cases such as sign-in, sign-up, decentralized reputation-based authorization.
 
 This EIP is complementary to EIP-2844.
 
