@@ -42,7 +42,7 @@ Credential Providers MUST support the following LD-Proof types:
 - [`EthereumEip712Signature2021`](TBD)
 - [`JsonWebSignature2020`](https://github.com/w3c-ccg/lds-jws2020), only Ed25519 and secp256k1
 - [`BbsBlsSignature2020`](https://w3c-ccg.github.io/ldp-bbs2020/)
-- [`BbsBlsBoundSignature2020`]((https://w3c-ccg.github.io/ldp-bbs2020/)
+- [`BbsBlsBoundSignature2020`](https://w3c-ccg.github.io/ldp-bbs2020/)
 
 ### Supported Verifiable Credentials Profile
 
