@@ -23,36 +23,44 @@ Add new methods to the JSON-RPC for storing, creating, selectively disclosing an
 
 This EIP describes three methods to add to the JSON-RPC that enables wallets to act as a Credential Provider (CP) to support _Verifiabe Credentials_ (VCs) storage, issuance, selective disclosure and proof of control. VCs are usually self-certifiable attestations from an issuer about the owner of the VC encoded in the credential subject. The owner of the VC can selectively disclose information from those VCs and prove control of the VC to a third-party. Please visit https://www.w3.org/TR/vc-data-model/ for a full explaination of VCs. Since the VC data model is very flexible, this EIP enforces specific rules on VCs and supported proof types to facilitate developer experience and interoperability. This is important for use cases such as sign-in, sign-up and decentralized reputation-based authorization.
 
-This EIP is complementary to [EIP-2844]().
+This EIP is complementary to [EIP-2844](https://eips.ethereum.org/EIPS/eip-2844).
 
 ## Motivation
 
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
 
-Web3 applications like DAOs, Defi, NFT market places etc. need verifiable offchain and onchain reputation to enable certain features for their end users. Using VCs with LD-Proofs, it will be possible to find a standard representation for all types of identity assertions, and specifically with LD-Proofs, those identity attestations can contain proofs that can be consumed offchain and onchain. [EIP-2844]() is a good starting point but solves the problem only partially. This EIP builds on top of [EIP-2844]() and introduces new JSON-RPC methods that are needed to build decentralized reputation for offchain and onchain use.
+Web3 applications like DAOs, Defi, NFT market places etc. need verifiable offchain and onchain reputation to enable certain features for their end users. Using VCs with LD-Proofs, it will be possible to find a standard representation for all types of identity assertions, and specifically with LD-Proofs, those identity attestations can contain proofs that can be consumed offchain and onchain. [EIP-2844](https://eips.ethereum.org/EIPS/eip-2844) is a good starting point but solves the problem only partially. This EIP builds on top of [EIP-2844](https://eips.ethereum.org/EIPS/eip-2844) and introduces new JSON-RPC methods that are needed to build decentralized reputation for offchain and onchain use.
 
-Web3 is missing a coherent method for requesting identity assertions from their users, e.g. for sign-in and sign-up. The majority of Web3 projects are using an approach where they cryptographically bind a signature produced by the wallet to the identity assertion through either [personal_sign]() or [EIP-712](). The identity assertion becomes self-certifiable with this approach. The identifier for the user is the Ethereum address. To improve privacy it is important to introduce a mechanism that allows people to selectively disclose the linkage between their primary identifier and their Ethereum address. This can be done through VCs and DIDs.
+Web3 is missing a coherent method for requesting identity assertions from their users, e.g. for sign-in and sign-up. The majority of Web3 projects are using an approach where they cryptographically bind a signature produced by the wallet to the identity assertion through either [eth.personal.sign](https://web3js.readthedocs.io/en/v1.4.0/web3-eth-personal.html#sign) or [EIP-712](https://eips.ethereum.org/EIPS/eip-712). The identity assertion becomes self-certifiable with this approach. The identifier for the user is the Ethereum address. To improve privacy it is important to introduce a mechanism that allows people to selectively disclose the linkage between their primary identifier and their Ethereum address. This can be done through VCs and DIDs.
 
 ## Specification
 
 Three new JSON-RPC methods are specified under the new `creds_*` prefix.
 
-### Supported LD-Proofs
+### Verifiable Credential Proofs
 
-This is a registry of supported LD-Proofs by this specification. New LD-proof types MAY be added through PRs. The PR
-MUST contain a link to the LD-Proof specification as well as a decription why support is needed. As a rule of thumb,
-new LD-Proof types MUST have been registered in the W3C CCG [LD-Proof Suite Registry](https://w3c-ccg.github.io/ld-cryptosuite-registry/).
+This section provides guidance on recommended [LD-Proof Suites](https://w3c-ccg.github.io/ld-proofs/)
+and [IANA JWS algorithm](https://www.iana.org/assignments/jose/jose.xhtml) support of embedded and
+external proofs for VCs.
 
-Credential Providers MUST support the following LD-Proof types:
+#### Embedded Proofs
 
+CPs SHOULD support the following LD-Proof types for embedded proofs (i.e. VC-LDP):
 - [`EthereumEip712Signature2021`](https://w3id.org/security/suites/eip712sig-2021)
 - [`JsonWebSignature2020`](https://w3id.org/security/suites/jws-2020), only Ed25519 and secp256k1
 - [`BbsBlsSignature2020`](https://w3id.org/security/suites/bls12381-2020)
 - [`BbsBlsBoundSignature2020`](https://w3id.org/security/suites/bls12381-2020)
 
+#### External Proofs
+
+CPs SHOULD support the following [IANA](https://www.iana.org/assignments/jose/jose.xhtml) JWS algorithms
+for external proofs (i.e. VC-JWT):
+- [`ES256K`](https://www.rfc-editor.org/rfc/rfc8812.html)
+- [`EdDSA`](https://www.rfc-editor.org/rfc/rfc8037.html)
+
 ### Supported Verifiable Credentials Profile
 
-VCs that can be used with this specification MUST be valid JSON-LD and MUST contain a valid LD-Proof in the `proof` property. JWT-based VCs and proofs are intentionally not supported.
+VCs that can be used with this specification MUST be valid JSON-LD. VCs and VPs SHOULD use any of the proofs recommended by [Embedded Proofs](#EmbeddedProofs) or [External Proofs](#ExternalProofs).
 
 ### Store
 
@@ -68,7 +76,7 @@ Stores the given VC in the CP.
 
 ##### Returns:
 
-- `error` - If `vc` was malformed or does not comply with the Verifialbe Credentials Profile defined in this specification.
+- `error` - OPTIONAL. If `vc` was malformed or does not comply with the Verifialbe Credentials Profile defined in this specification.
 
 ### Issue
 
@@ -85,8 +93,8 @@ Issues a VC with the given payload using one of the CP's DIDs.
 
 ##### Returns:
 
-- `vc` - A Verifiable Credential that was issued by the CP.
-- `error` - If `payload` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification, or the `verificationMethod` was not found or is not mangaged by the CP.
+- `vc` - OPTIONAL. Present if the call was successful. A Verifiable Credential that was issued by the CP.
+- `error` - OPTIONAL. If `payload` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification, or the `verificationMethod` was not found or is not mangaged by the CP.
 
 ### Present
 
@@ -100,13 +108,13 @@ we will use the [DIF Presentation Exchange](https://identity.foundation/presenta
 ##### Params:
 
 - `presentation_defintion` - Defines the selective disclosure query with optional holder binding.
-- `domain` - OPTIONAL: if holder binding was requested, this parameter is mandatory.
-- `challenge` - OPTIONAL: if holder binding was requested, this parameter is mandatory.
+- `domain` - OPTIONAL. If holder binding was requested, this parameter is mandatory.
+- `challenge` - OPTIONAL. If holder binding was requested, this parameter is mandatory.
 
 ##### Returns:
 
-- `vp` - A Verifiable Presentation (VP) that contains the requested disclosed VCs from the CP.
-- `error` - If `presentation_definition` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification.
+- `vp` - OPTIONAL. Present if the call was successful. It contains a _Verifiable Presentation_ (VP) that contains the requested VCs from the CP.
+- `error` - OPTIONAL. Present if `presentation_definition` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification.
 
 ##### Examples:
 
