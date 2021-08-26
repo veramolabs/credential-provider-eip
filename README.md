@@ -88,8 +88,8 @@ Issues a VC with the given payload using one of the CP's DIDs.
 
 ##### Params:
 
-- `payload` - The payload of the Verifiable Credential to be issued.
-- `preferreded_proofs` - An ordered array of preferred proof formats and types for the VC to be issued. Each array item is an object with two properties, `format` and `type`. `format` indicates the preferred proof type, which is either `jwt` for (Embedded Proofs) or `ldp` for (External Proofs). The `type` refers to proof type of the VC (see [Verifiable Credentials Proofs](#VerifiableCredentialsProofs) for a list of valid combinations).
+- `payload` - REQUIRED. The payload of the Verifiable Credential to be issued.
+- `preferreded_proofs` - OPTIONAL. An ordered array of preferred proof formats and types for the VC to be issued. Each array item is an object with two properties, `format` and `type`. `format` indicates the preferred proof type, which is either `jwt` for (Embedded Proofs) or `ldp` for (External Proofs). The `type` refers to proof type of the VC (see [Verifiable Credentials Proofs](#VerifiableCredentialsProofs) for a list of valid combinations). If the wallet does not support any of the preferred proofs, the wallet can select a format and type from the list defined in [Verifiable Credentials Proofs](#VerifiableCredentialsProofs) of as a fallback.
 
 ##### Returns:
 
