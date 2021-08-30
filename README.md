@@ -88,13 +88,13 @@ Issues a VC with the given payload using one of the CP's DIDs.
 
 ##### Params:
 
-- `payload` - The payload of the Verifiable Credential to be issued.
-- `verificationMethod` - A DID URI that indicates which method (e.g., key) to use to create the proof over the `payload`, e.g., `did:example:0xaaaa#my-secp256k1-key`
+- `payload` - REQUIRED. The payload of the Verifiable Credential to be issued.
+- `preferred_proofs` - OPTIONAL. An ordered array of preferred proof formats and types for the VC to be issued. Each array item is an object with two properties, `format` and `type`. `format` indicates the preferred proof type, which is either `jwt` for (External Proofs) or `ldp` for (Embedded Proofs). The `type` refers to proof type of the VC (see [Verifiable Credentials Proofs](#VerifiableCredentialsProofs) for a list of valid combinations). If the wallet does not support any of the preferred proofs, the wallet can select a format and type from the list defined in [Verifiable Credentials Proofs](#VerifiableCredentialsProofs) as a fallback.
 
 ##### Returns:
 
 - `vc` - OPTIONAL. Present if the call was successful. A Verifiable Credential that was issued by the CP.
-- `error` - OPTIONAL. If `payload` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification, or the `verificationMethod` was not found or is not mangaged by the CP.
+- `error` - OPTIONAL. If `payload` was malformed, does not comply with the Verifialbe Credentials Profile defined in this specification.
 
 ### Present
 
